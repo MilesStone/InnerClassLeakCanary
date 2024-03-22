@@ -13,6 +13,7 @@ what transform plugin do is
 ![source](pic/source_code.png)
 
 class content of inner class
+
 ![before](pic/before.png)
 
 class content of inner class after transfrom
