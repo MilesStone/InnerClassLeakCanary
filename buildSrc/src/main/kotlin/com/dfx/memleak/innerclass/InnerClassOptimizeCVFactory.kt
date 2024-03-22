@@ -40,8 +40,7 @@ internal abstract class InnerClassOptimizeCVFactory :
     private class OptimizeClassNode(val nextVisitor: ClassVisitor, val classData: ClassData) :
         ClassNode(ASM9) {
         override fun visitEnd() {
-            // todo: 检查外部类是否为activity且存在this$0的字段
-            if (classData.className.contains("com.example.myapplication.MainActivity\$")
+            if (ActivityInfoContainer.isActivityInnerClass(classData.className)
                 && fields.any { it.name == "this\$0" }
             ) {
                 println("found an inner anonymous class of activity $outerClass")
@@ -57,7 +56,7 @@ internal abstract class InnerClassOptimizeCVFactory :
                     )
                 )
                 val initMethod =
-                    methods.find { it.name == "<init>" && it.desc == "(Lcom/example/myapplication/MainActivity;)V" }
+                    methods.find { it.name == "<init>" && it.desc == "(L$outerClass;)V" }
                 initMethod?.instructions?.let {
                     it.forEach { node: AbstractInsnNode ->
                         when (node) {
@@ -114,6 +113,8 @@ internal abstract class InnerClassOptimizeCVFactory :
                 // 对匿名内部类中所有涉及this$0访问的地方都修改为访问mWeakActivity， 包括构造函数
                 methods.forEach { method ->
                     with(method.instructions) {
+
+                        // todo: 实际只在第一处访问this$0的地方判空就好，如果空直接返回，后面再访问就不用再判空了
                         val getFieldNodes =
                             filter { it is FieldInsnNode && it.name == "this\$0" && it.opcode == GETFIELD }
                         getFieldNodes.forEach { node ->
@@ -137,13 +138,12 @@ internal abstract class InnerClassOptimizeCVFactory :
                                     "()Ljava/lang/Object;"
                                 )
                             )
-                            // todo: 检查实际activity
                             preNode = insertMethodNode(
                                 this,
                                 preNode,
                                 TypeInsnNode(
                                     CHECKCAST,
-                                    "com/example/myapplication/MainActivity"
+                                    "$outerClass"
                                 )
                             )
 
@@ -158,7 +158,7 @@ internal abstract class InnerClassOptimizeCVFactory :
                             method.localVariables.add(
                                 LocalVariableNode(
                                     "weakActivity",
-                                    "Lcom/example/myapplication/MainActivity;",
+                                    "L$outerClass;",
                                     null,
                                     firstLabel,
                                     lastLabel,

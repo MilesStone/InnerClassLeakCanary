@@ -26,12 +26,7 @@ gradlePlugin {
     }
 }
 dependencies {
-//    implementation gradleApi()   // gradle sdk
-//    implementation localGroovy() // groovy sdk
-//    implementation "com.android.tools.build:gradle:7.2.2"
-//    implementation("com.android.tools.build:gradle:8.2.2")
     implementation("com.android.tools.build:gradle-api:8.2.2")
-//    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:1.9.20")
     implementation("org.ow2.asm:asm-commons:9.6")
     implementation("org.ow2.asm:asm-util:9.6")
 
